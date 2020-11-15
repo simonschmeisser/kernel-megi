@@ -335,7 +335,114 @@ static int vidioc_enum_fmt_vid_cap(struct file *file, void *priv,
 	if (index >= ARRAY_SIZE(supported_pixformats))
 		return -EINVAL;
 
-	f->pixelformat = supported_pixformats[index];
+	if (f->mbus_code == 0) {
+		f->pixelformat = supported_pixformats[index];
+		return 0;
+	}
+
+	if (index == 0) {
+		switch (f->mbus_code) {
+		case MEDIA_BUS_FMT_SBGGR8_1X8:
+			f->pixelformat = V4L2_PIX_FMT_SBGGR8;
+			return 0;
+		case MEDIA_BUS_FMT_SGBRG8_1X8:
+			f->pixelformat = V4L2_PIX_FMT_SGBRG8;
+			return 0;
+		case MEDIA_BUS_FMT_SGRBG8_1X8:
+			f->pixelformat = V4L2_PIX_FMT_SGRBG8;
+			return 0;
+		case MEDIA_BUS_FMT_SRGGB8_1X8:
+			f->pixelformat = V4L2_PIX_FMT_SRGGB8;
+			return 0;
+		case MEDIA_BUS_FMT_SBGGR10_1X10:
+			f->pixelformat = V4L2_PIX_FMT_SBGGR10;
+			return 0;
+		case MEDIA_BUS_FMT_SGBRG10_1X10:
+			f->pixelformat = V4L2_PIX_FMT_SGBRG10;
+			return 0;
+		case MEDIA_BUS_FMT_SGRBG10_1X10:
+			f->pixelformat = V4L2_PIX_FMT_SGRBG10;
+			return 0;
+		case MEDIA_BUS_FMT_SRGGB10_1X10:
+			f->pixelformat = V4L2_PIX_FMT_SRGGB10;
+			return 0;
+		case MEDIA_BUS_FMT_SBGGR12_1X12:
+			f->pixelformat = V4L2_PIX_FMT_SBGGR12;
+			return 0;
+		case MEDIA_BUS_FMT_SGBRG12_1X12:
+			f->pixelformat = V4L2_PIX_FMT_SGBRG12;
+			return 0;
+		case MEDIA_BUS_FMT_SGRBG12_1X12:
+			f->pixelformat = V4L2_PIX_FMT_SGRBG12;
+			return 0;
+		case MEDIA_BUS_FMT_SRGGB12_1X12:
+			f->pixelformat = V4L2_PIX_FMT_SRGGB12;
+			return 0;
+		case MEDIA_BUS_FMT_RGB555_2X8_PADHI_LE:
+			f->pixelformat = V4L2_PIX_FMT_RGB555;
+			return 0;
+		case MEDIA_BUS_FMT_RGB565_2X8_BE:
+			f->pixelformat = V4L2_PIX_FMT_RGB565X;
+			return 0;
+		case MEDIA_BUS_FMT_RGB565_2X8_LE:
+			f->pixelformat = V4L2_PIX_FMT_RGB565;
+			return 0;
+		case MEDIA_BUS_FMT_YUYV8_2X8:
+			f->pixelformat = V4L2_PIX_FMT_YUYV;
+			return 0;
+		case MEDIA_BUS_FMT_YVYU8_2X8:
+			f->pixelformat = V4L2_PIX_FMT_YVYU;
+			return 0;
+		case MEDIA_BUS_FMT_UYVY8_2X8:
+			f->pixelformat = V4L2_PIX_FMT_UYVY;
+			return 0;
+		case MEDIA_BUS_FMT_VYUY8_2X8:
+			f->pixelformat = V4L2_PIX_FMT_VYUY;
+			return 0;
+		case MEDIA_BUS_FMT_JPEG_1X8:
+			f->pixelformat = V4L2_PIX_FMT_JPEG;
+			return 0;
+		default:
+			return -EINVAL;
+		}
+	} else {
+		switch (f->mbus_code) {
+		case MEDIA_BUS_FMT_UYVY8_2X8:
+		case MEDIA_BUS_FMT_VYUY8_2X8:
+		case MEDIA_BUS_FMT_YUYV8_2X8:
+		case MEDIA_BUS_FMT_YVYU8_2X8:
+			switch (index) {
+			case 1:
+				f->pixelformat = V4L2_PIX_FMT_HM12;
+				return 0;
+			case 2:
+				f->pixelformat = V4L2_PIX_FMT_NV12;
+				return 0;
+			case 3:
+				f->pixelformat = V4L2_PIX_FMT_NV21;
+				return 0;
+			case 4:
+				f->pixelformat = V4L2_PIX_FMT_NV16;
+				return 0;
+			case 5:
+				f->pixelformat = V4L2_PIX_FMT_NV61;
+				return 0;
+			case 6:
+				f->pixelformat = V4L2_PIX_FMT_YUV420;
+				return 0;
+			case 7:
+				f->pixelformat = V4L2_PIX_FMT_YVU420;
+				return 0;
+			case 8:
+				f->pixelformat = V4L2_PIX_FMT_YUV422P;
+				return 0;
+			default:
+				return -EINVAL;
+			}
+		default:
+			return -EINVAL;
+		}
+	}
 
 	return 0;
 }
@@ -704,7 +811,7 @@ int sun6i_video_init(struct sun6i_video *video, struct sun6i_csi *csi,
 	vdev->v4l2_dev		= &csi->v4l2_dev;
 	vdev->queue		= vidq;
 	vdev->lock		= &video->lock;
-	vdev->device_caps	= V4L2_CAP_STREAMING | V4L2_CAP_VIDEO_CAPTURE;
+	vdev->device_caps	= V4L2_CAP_STREAMING | V4L2_CAP_VIDEO_CAPTURE | V4L2_CAP_IO_MC;
 	video_set_drvdata(vdev, video);
 
 	ret = video_register_device(vdev, VFL_TYPE_VIDEO, -1);
