@@ -2455,7 +2455,7 @@ static int ov5640_set_fmt(struct v4l2_subdev *sd,
 	}
 
 	ret = ov5640_try_fmt_internal(sd, mbus_fmt,
-				      sensor->current_fr, &new_mode);
+				      /*sensor->current_fr*/ 0 /* = 2FPS */, &new_mode);
 	if (ret)
 		goto out;
 
