@@ -578,12 +578,38 @@ static int vidioc_s_parm(struct file *file, void *priv,
 	return v4l2_s_parm_cap(video_devdata(file), subdev, p);
 }
 
+
+static int vidioc_enum_framesizes(struct file *file, void *fh,
+				       struct v4l2_frmsizeenum *fsize)
+{
+	//const struct video_i2c_data *data = video_drvdata(file);
+	//const struct v4l2_frmsize_discrete *size = data->chip->size;
+
+	/* currently only one frame size is allowed */
+	if (fsize->index > 0)
+		return -EINVAL;
+
+	if (!is_pixformat_valid(fsize->pixel_format))
+		return -EINVAL;
+
+	//if (fsize->pixel_format != data->chip->format->pixelformat)
+	//	return -EINVAL;
+
+	fsize->type = V4L2_FRMSIZE_TYPE_DISCRETE;
+	fsize->discrete.width = 2592; //4800/*size->width*/;
+	fsize->discrete.height = 1944; //4800/*size->height*/;
+
+	return 0;
+}
+
 static const struct v4l2_ioctl_ops sun6i_video_ioctl_ops = {
 	.vidioc_querycap		= vidioc_querycap,
 	.vidioc_enum_fmt_vid_cap	= vidioc_enum_fmt_vid_cap,
 	.vidioc_g_fmt_vid_cap		= vidioc_g_fmt_vid_cap,
 	.vidioc_s_fmt_vid_cap		= vidioc_s_fmt_vid_cap,
 	.vidioc_try_fmt_vid_cap		= vidioc_try_fmt_vid_cap,
+
+    .vidioc_enum_framesizes		= vidioc_enum_framesizes,
 
 	.vidioc_enum_input		= vidioc_enum_input,
 	.vidioc_s_input			= vidioc_s_input,
